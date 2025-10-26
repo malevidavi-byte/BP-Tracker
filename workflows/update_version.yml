@@ -1,0 +1,34 @@
+name: Update version.json on Release
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+
+jobs:
+  update-version:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Update version.json
+        run: |
+          echo "Создаю новый version.json"
+          cat <<EOF > version.json
+          {
+            "version": "${{ github.event.release.tag_name }}",
+            "download_url": "https://github.com/${{ github.repository }}/releases/latest/download/BPT.exe",
+            "changelog": "${{ github.event.release.body }}"
+          }
+          EOF
+
+      - name: Commit and push updated version.json
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git add version.json
+          git commit -m "🔄 Update version.json for release ${{ github.event.release.tag_name }}"
+          git push
